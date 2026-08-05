@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://my-ai-chatbot-9rai.onrender.com" 
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
