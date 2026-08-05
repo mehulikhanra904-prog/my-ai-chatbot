@@ -1,0 +1,393 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 20px;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  background: #eef2ff;
+
+  transition: 0.3s;
+}
+
+.history-sidebar {
+  width: 260px;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.history-sidebar h2 {
+  font-size: 18px;
+  margin: 20px 0;
+}
+
+.new-chat-button {
+  width: 100%;
+  padding: 12px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+}
+
+.history-item {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  text-align: left;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.history-item:hover {
+  background: #eee;
+}
+
+.history-item.active {
+  background: #ddd;
+}
+
+.no-history {
+  opacity: 0.6;
+}
+
+.chat-container {
+  flex: 1;
+}
+
+.chat-container {
+  width: 100%;
+  max-width: 800px;
+  height: 85vh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: white;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* HEADER */
+
+.header {
+  padding: 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #4f46e5;
+
+  color: white;
+}
+
+.header h1 {
+  margin: 0;
+
+  font-size: 24px;
+}
+
+.header p {
+  margin: 5px 0 0;
+
+  opacity: 0.85;
+}
+
+.theme-button {
+  width: 45px;
+  height: 45px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: white;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.theme-button:hover {
+  transform: scale(1.1);
+}
+
+/* TOOLBAR */
+
+.toolbar {
+  padding: 10px 18px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  border-bottom: 1px solid #ddd;
+}
+
+.toolbar button {
+  border: none;
+
+  background: transparent;
+
+  color: #4f46e5;
+
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+/* MESSAGES */
+
+.messages {
+  flex: 1;
+
+  padding: 25px;
+
+  overflow-y: auto;
+}
+
+/* WELCOME */
+
+.welcome {
+  text-align: center;
+
+  margin-top: 100px;
+
+  color: #666;
+}
+
+.robot {
+  font-size: 50px;
+}
+
+.welcome h2 {
+  margin-bottom: 5px;
+}
+
+/* MESSAGE */
+
+.message {
+  max-width: 75%;
+
+  margin-bottom: 18px;
+
+  padding: 13px 17px;
+
+  border-radius: 15px;
+
+  line-height: 1.5;
+}
+
+.message.user {
+  margin-left: auto;
+
+  background: #e0e7ff;
+
+  border-bottom-right-radius: 4px;
+}
+
+.message.ai {
+  margin-right: auto;
+
+  background: #f1f5f9;
+
+  border-bottom-left-radius: 4px;
+}
+
+.message-name {
+  font-size: 13px;
+
+  font-weight: bold;
+
+  margin-bottom: 6px;
+}
+
+.message-text {
+  white-space: pre-wrap;
+}
+
+/* TYPING */
+
+.typing {
+  display: flex;
+
+  gap: 5px;
+}
+
+.typing span {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #777;
+
+  animation: typing 1.4s infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+
+    transform: translateY(-5px);
+  }
+}
+
+/* INPUT */
+
+.input-area {
+  display: flex;
+
+  gap: 10px;
+
+  padding: 16px;
+
+  border-top: 1px solid #ddd;
+}
+
+.input-area input {
+  flex: 1;
+
+  padding: 14px 16px;
+
+  border: 1px solid #ccc;
+
+  border-radius: 12px;
+
+  outline: none;
+
+  font-size: 16px;
+}
+
+.input-area input:focus {
+  border-color: #4f46e5;
+}
+
+.input-area button {
+  padding: 12px 22px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #4f46e5;
+
+  color: white;
+
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+.input-area button:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+/* DARK MODE */
+
+.dark {
+  background: #111827;
+}
+
+.dark .chat-container {
+  background: #1f2937;
+
+  color: white;
+}
+
+.dark .toolbar {
+  border-color: #374151;
+}
+
+.dark .message.ai {
+  background: #374151;
+}
+
+.dark .message.user {
+  background: #4338ca;
+}
+
+.dark .welcome {
+  color: #d1d5db;
+}
+
+.dark .input-area {
+  border-color: #374151;
+}
+
+.dark .input-area input {
+  background: #111827;
+
+  color: white;
+
+  border-color: #4b5563;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .app {
+    padding: 0;
+  }
+
+  .chat-container {
+    height: 100vh;
+
+    border-radius: 0;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .input-area {
+    padding: 10px;
+  }
+}
