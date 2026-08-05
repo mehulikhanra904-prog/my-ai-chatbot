@@ -59,7 +59,8 @@ MongoDB and loaded again as chat history.
 ## 🖼️ Preview
 
 ### 💬 Chat Interface
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2452e7a0-36b8-4cfd-b300-0981ddeeef9a" />
+<img width="1219" height="728" alt="image" src="https://github.com/user-attachments/assets/bdbd197d-c584-4345-a9a4-5292fde62a89" />
+
 
 
 
