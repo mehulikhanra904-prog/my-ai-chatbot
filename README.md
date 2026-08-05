@@ -59,10 +59,10 @@ MongoDB and loaded again as chat history.
 ## 🖼️ Preview
 
 ### 💬 Chat Interface
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2452e7a0-36b8-4cfd-b300-0981ddeeef9a" />
 
-![AI Chatbot Preview](https://via.placeholder.com/1000x500?text=AI+Chatbot+Preview)
 
-> Replace the placeholder image above with a screenshot of your actual chatbot.
+
 
 ---
 
