@@ -1,0 +1,17 @@
+{
+  "name": "my-ai-chatbot",
+  "private": true,
+  "workspaces": [
+    "backened",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm --prefix backened run dev\" \"npm --prefix frontend run dev\"",
+    "start": "npm run dev",
+    "backend": "npm --prefix backened run dev",
+    "frontend": "npm --prefix frontend run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
