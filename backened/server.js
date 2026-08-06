@@ -29,7 +29,7 @@ console.log("Gemini key exists:", !!process.env.GEMINI_API_KEY);
 // MongoDB Schema
 // ==========================
 
-const messageSchema = new mongoose.Schema(
+const  messageSchema = new mongoose.Schema(
   {
     chatId: {
       type: String,

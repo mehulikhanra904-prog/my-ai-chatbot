@@ -42,14 +42,7 @@ MongoDB and loaded again as chat history.
 - ⌨️ **Enter key support**
 - ⏳ **AI typing animation**
 - 📱 **Responsive interface**
-- 🔐 **Environment variable support**
-- ⚡ **Fast React + Vite frontend**
-- 🟢 **Express.js backend**
-- 🔄 **REST API architecture**
-
----
-
-
+- 🔐 **Environment variable support
 
 > The frontend is deployed using Vercel.
 
