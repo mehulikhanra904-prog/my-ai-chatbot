@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="YOUR_VERCEL_URL">
+  <a href="my-ai-chatbot-git-main-dedicated-learner.vercel.app">
     🚀 <strong>Live Demo</strong>
   </a>
   •

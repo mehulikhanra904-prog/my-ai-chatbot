@@ -24,7 +24,7 @@ app.use(express.json());
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
-
+console.log("Gemini key exists:", !!process.env.GEMINI_API_KEY);
 // ==========================
 // MongoDB Schema
 // ==========================
@@ -57,15 +57,93 @@ const Message = mongoose.model("Message", messageSchema);
 // MongoDB Connection
 // ==========================
 
-mongoose
-  .connect(process.env.MONGODB_URI)
+const dbState = {
+  connected: false,
+};
+
+const localMessages = [];
+
+const saveMessage = async (messageData) => {
+  if (dbState.connected) {
+    return Message.create(messageData);
+  }
+
+  const localMessage = {
+    ...messageData,
+    _id: `${Date.now()}-${Math.random()}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  localMessages.push(localMessage);
+  return localMessage;
+};
+
+const findMessagesByChatId = async (chatId) => {
+  if (dbState.connected) {
+    return Message.find({ chatId }).sort({ createdAt: 1 });
+  }
+
+  return localMessages
+    .filter((message) => message.chatId === chatId)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+};
+
+const getChatsSummary = async () => {
+  if (dbState.connected) {
+    return Message.aggregate([
+      {
+        $sort: {
+          createdAt: 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$chatId",
+          firstMessage: {
+            $first: "$text",
+          },
+          createdAt: {
+            $first: "$createdAt",
+          },
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
+  }
+
+  const chats = Object.values(
+    localMessages.reduce((acc, message) => {
+      if (!acc[message.chatId]) {
+        acc[message.chatId] = {
+          _id: message.chatId,
+          firstMessage: message.text,
+          createdAt: message.createdAt,
+        };
+      }
+      return acc;
+    }, {})
+  );
+
+  return chats.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+};
+
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected successfully");
+    dbState.connected = true;
   })
   .catch((error) => {
     console.error("========== MONGODB ERROR ==========");
     console.error(error);
     console.error("==================================");
+    console.warn("Using local in-memory storage instead of MongoDB.");
   });
 
 // ==========================
@@ -95,7 +173,7 @@ app.post("/api/chat", async (req, res) => {
       chatId || Date.now().toString();
 
     // Save user's message
-    await Message.create({
+    await saveMessage({
       chatId: currentChatId,
       sender: "user",
       text: message,
@@ -103,17 +181,19 @@ app.post("/api/chat", async (req, res) => {
 
     // ==========================
     // GEMINI
-    // ==========================
+    // =========================
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: "gemini-3.5-flash",
       contents: message,
     });
+    console.log("Gemini response received");
+    console.log(response);
 
     const reply = response.text;
 
     // Save AI response
-    await Message.create({
+    await saveMessage({
       chatId: currentChatId,
       sender: "ai",
       text: reply,
@@ -139,11 +219,9 @@ app.post("/api/chat", async (req, res) => {
 
 app.get("/api/messages/:chatId", async (req, res) => {
   try {
-    const messages = await Message.find({
-      chatId: req.params.chatId,
-    }).sort({
-      createdAt: 1,
-    });
+    const messages = await findMessagesByChatId(
+      req.params.chatId
+    );
 
     res.json(messages);
   } catch (error) {
@@ -164,33 +242,7 @@ app.get("/api/messages/:chatId", async (req, res) => {
 
 app.get("/api/chats", async (req, res) => {
   try {
-    const chats = await Message.aggregate([
-      {
-        $sort: {
-          createdAt: 1,
-        },
-      },
-
-      {
-        $group: {
-          _id: "$chatId",
-
-          firstMessage: {
-            $first: "$text",
-          },
-
-          createdAt: {
-            $first: "$createdAt",
-          },
-        },
-      },
-
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-    ]);
+    const chats = await getChatsSummary();
 
     res.json(chats);
   } catch (error) {
@@ -209,10 +261,8 @@ app.get("/api/chats", async (req, res) => {
 // START SERVER
 // ==========================
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
+  console.log(`Server running on port ${PORT}`);
 });
