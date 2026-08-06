@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API_URL = "https://my-ai-chatbot-1-0e7q.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -9,7 +9,9 @@ function App() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [chatId, setChatId] = useState("default-chat");
+  const [chatId, setChatId] = useState(
+    () => localStorage.getItem("chatId") || null
+  );
 
   const [chatHistory, setChatHistory] = useState([]);
 
@@ -17,7 +19,6 @@ function App() {
   // LOAD CHAT HISTORY LIST
   // ==========================
   useEffect(() => {
-    if(chatId) return;
     async function loadChats() {
       try {
         const response = await fetch(`${API_URL}/api/chats`);
@@ -45,8 +46,7 @@ function App() {
 
     async function loadMessages() {
       try {
-        const response = await fetch(
-          `${API_URL}/api/messages/${chatId}`
+        const response = await fetch(`${API_URL}/api/messages/${chatId}`
         );
 
         if (!response.ok) {
