@@ -125,3 +125,51 @@ my-ai-chatbot/
 │
 ├── .gitignore
 └── README.md
+# 🤖 My AI Chatbot
+
+An AI chatbot built using the MERN stack and Google Gemini API.
+
+## 🚀 Features
+
+- 💬 AI-powered chat
+- 🤖 Google Gemini API integration
+- 💾 Chat history storage
+- 🗄️ MongoDB database
+- ⚡ React frontend
+- 🚀 Node.js and Express backend
+- 🌐 Deployed online
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React
+- JavaScript
+- HTML
+- CSS
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- Google Gemini API
+
+## 🚀 Live Demo
+
+[Open AI Chatbot](https://my-ai-chatbot-sigma-brown.vercel.app/)
+
+## 📂 Project Structure
+
+```text
+my-ai-chatbot/
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── ...
+│
+├── backened/
+│   ├── server.js
+│   ├── package.json
+│   └── package-lock.json
+│
+└── README.md
