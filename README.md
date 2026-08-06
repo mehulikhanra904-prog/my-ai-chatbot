@@ -7,9 +7,10 @@
 
 <p align="center">
   <a href="https://my-ai-chatbot-sigma-brown.vercel.app/"
+  
 
 
-  [Live Demo](https://my-ai-chatbot-sigma-brown.vercel.app/)
+[live demo] ("https://my-ai-chatbot-sigma-brown.vercel.app/")
 
   
     
@@ -46,7 +47,7 @@ MongoDB and loaded again as chat history.
 - 📱 **Responsive interface**
 - 🔐 **Environment variable support
 
-> The frontend is deployed using Vercel.
+
 
 ---
 
