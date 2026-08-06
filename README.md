@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="my-ai-chatbot-git-main-dedicated-learner.vercel.app">
-  live demo :https://my-ai-chatbot-sigma-brown.vercel.app/
+  
     
   </a>
   •
