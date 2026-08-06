@@ -47,11 +47,8 @@ MongoDB and loaded again as chat history.
 
 ---
 
-## 🚀 Live Demo
+## 🚀 Live Demo:my-ai-chatbot-sigma-brown.vercel.app
 
-### 🌐 Try the chatbot
-
-👉 my-ai-chatbot-sigma-brown.vercel.app
 
 > The frontend is deployed using Vercel.
 
