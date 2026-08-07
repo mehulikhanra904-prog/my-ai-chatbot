@@ -159,6 +159,20 @@ body {
   font-size: 14px;
 }
 
+.error-banner {
+  margin: 0 18px 10px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.error-banner strong {
+  display: inline-block;
+  margin-right: 6px;
+}
+
 /* MESSAGES */
 
 .messages {

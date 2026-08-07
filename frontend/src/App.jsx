@@ -14,12 +14,29 @@ function App() {
   );
 
   const [chatHistory, setChatHistory] = useState([]);
+  const [error, setError] = useState(null);
+
+  async function parseJSON(response) {
+    const contentType =
+      response.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      const text = await response.text();
+      throw new Error(
+        `Unexpected non-JSON response: ${text}`
+      );
+    }
+
+    return response.json();
+  }
 
   // ==========================
   // LOAD CHAT HISTORY LIST
   // ==========================
   useEffect(() => {
     async function loadChats() {
+      setError(null);
+
       try {
         const response = await fetch(`${API_URL}/api/chats`);
 
@@ -27,11 +44,12 @@ function App() {
           throw new Error("Failed to load chats");
         }
 
-        const data = await response.json();
+        const data = await parseJSON(response);
 
         setChatHistory(data);
       } catch (error) {
         console.error("Chat history error:", error);
+        setError("Unable to load chat history. Check the backend.");
       }
     }
 
@@ -53,7 +71,7 @@ function App() {
           throw new Error("Failed to load messages");
         }
 
-        const data = await response.json();
+        const data = await parseJSON(response);
 
         setMessages(
           data.map((message) => ({
@@ -86,6 +104,7 @@ function App() {
       text: text,
     };
 
+    setError(null);
     setMessages((previous) => [...previous, userMessage]);
     setInput("");
     setLoading(true);
@@ -104,7 +123,7 @@ function App() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseJSON(response);
 
       if (!response.ok) {
         throw new Error(
@@ -140,21 +159,17 @@ function App() {
 
       if (historyResponse.ok) {
         const historyData =
-          await historyResponse.json();
+          await parseJSON(historyResponse);
 
         setChatHistory(historyData);
       }
     } catch (error) {
       console.error(error);
 
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: Date.now() + 1,
-          sender: "ai",
-          text: "Sorry, I couldn't connect to the AI.",
-        },
-      ]);
+      setError(
+        error?.message ||
+          "Sorry, the AI is currently unavailable."
+      );
     } finally {
       setLoading(false);
     }
@@ -174,6 +189,7 @@ function App() {
   // ==========================
   function newChat() {
     setChatId(null);
+    setError(null);
 
     localStorage.removeItem("chatId");
 
@@ -186,6 +202,7 @@ function App() {
   // ==========================
   function clearChat() {
     setMessages([]);
+    setError(null);
   }
 
   // ==========================
@@ -288,6 +305,12 @@ function App() {
           </button>
 
         </div>
+
+        {error && (
+          <div className="error-banner">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
 
         {/* Messages */}
 

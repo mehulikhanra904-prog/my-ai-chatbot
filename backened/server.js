@@ -10,6 +10,14 @@ const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 
+const useAIFallback =
+  process.env.USE_AI_FALLBACK !== "false";
+const aiFallbackReply =
+  process.env.AI_FALLBACK_REPLY ||
+  "I'm temporarily unable to access the AI service right now. Please try again in a moment.";
+
+console.log("AI fallback enabled:", useAIFallback);
+
 // ==========================
 // Middleware
 // ==========================
@@ -159,19 +167,16 @@ app.get("/", (req, res) => {
 // ==========================
 
 app.post("/api/chat", async (req, res) => {
+  const { message, chatId } = req.body;
+  const currentChatId = chatId || Date.now().toString();
+
+  if (!message) {
+    return res.status(400).json({
+      error: "Message is required",
+    });
+  }
+
   try {
-    const { message, chatId } = req.body;
-
-    if (!message) {
-      return res.status(400).json({
-        error: "Message is required",
-      });
-    }
-
-    // Create a chat ID if one doesn't exist
-    const currentChatId =
-      chatId || Date.now().toString();
-
     // Save user's message
     await saveMessage({
       chatId: currentChatId,
@@ -200,15 +205,36 @@ app.post("/api/chat", async (req, res) => {
     });
 
     // Send response to React
-    res.json({
-      reply: reply,
+    return res.json({
+      reply,
       chatId: currentChatId,
     });
   } catch (error) {
-    console.log("Chat error:", error.message);
+    console.log("Chat error:", error?.message || error);
+    console.log(error);
 
-    res.status(500).json({
-      error: "Failed to get AI response",
+    const fallbackReply = aiFallbackReply;
+    const plainError =
+      error?.error?.message ||
+      error?.message ||
+      "Failed to get AI response";
+
+    if (useAIFallback) {
+      await saveMessage({
+        chatId: currentChatId,
+        sender: "ai",
+        text: fallbackReply,
+      });
+
+      return res.status(200).json({
+        reply: fallbackReply,
+        chatId: currentChatId,
+        fallback: true,
+      });
+    }
+
+    return res.status(503).json({
+      error: plainError,
     });
   }
 });
