@@ -29,10 +29,13 @@ app.use(express.json());
 // Gemini AI
 // ==========================
 
+const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 const ai = new GoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
+const geminiModel = ai.getGenerativeModel({ model: geminiModelName });
 console.log("Gemini key exists:", !!process.env.GEMINI_API_KEY);
+console.log("Gemini model:", geminiModelName);
 // ==========================
 // MongoDB Schema
 // ==========================
@@ -142,8 +145,22 @@ const getChatsSummary = async () => {
   );
 };
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("MongoDB connected successfully");
-    dbState.connected = true;
-  })
+const mongoUri = process.env.MONGODB_URI;
+
+if (!mongoUri) {
+  console.warn("MONGODB_URI is not defined. Continuing with in-memory storage only.");
+} else {
+  mongoose
+    .connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+    })
+    .then(() => {
+      console.log("MongoDB connected successfully");
+      dbState.connected = true;
+    })
+    .catch((err) => {
+      console.error("MongoDB connection failed. Continuing with in-memory storage.", err.message);
+      dbState.connected = false;
+    });
+}
