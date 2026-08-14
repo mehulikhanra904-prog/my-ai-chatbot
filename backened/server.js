@@ -6,7 +6,7 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 
@@ -29,7 +29,7 @@ app.use(express.json());
 // Gemini AI
 // ==========================
 
-const ai = new GoogleGenAI({
+const ai = new GoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 console.log("Gemini key exists:", !!process.env.GEMINI_API_KEY);
@@ -188,14 +188,11 @@ app.post("/api/chat", async (req, res) => {
     // GEMINI
     // =========================
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: message,
-    });
+    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const response = await model.generateContent(message);
     console.log("Gemini response received");
-    console.log(response);
-
-    const reply = response.text;
+    
+    const reply = response.response.text();
 
     // Save AI response
     await saveMessage({
