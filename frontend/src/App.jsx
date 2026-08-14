@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API_URL = "";
+const API_URL = "https://my-ai-chatbot-1-0e7q.onrender.com";
 
 function buildApiUrl(path) {
   return API_URL ? `${API_URL}${path}` : path;
