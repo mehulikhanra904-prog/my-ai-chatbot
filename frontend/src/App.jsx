@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = "";
+
+function buildApiUrl(path) {
+  return API_URL ? `${API_URL}${path}` : path;
+}
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -38,7 +42,7 @@ function App() {
       setError(null);
 
       try {
-        const response = await fetch(`${API_URL}/api/chats`);
+        const response = await fetch(buildApiUrl("/api/chats"));
 
         if (!response.ok) {
           throw new Error("Failed to load chats");
@@ -64,7 +68,8 @@ function App() {
 
     async function loadMessages() {
       try {
-        const response = await fetch(`${API_URL}/api/messages/${chatId}`
+        const response = await fetch(
+          buildApiUrl(`/api/messages/${chatId}`)
         );
 
         if (!response.ok) {
@@ -110,7 +115,7 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const response = await fetch(buildApiUrl("/api/chat"), {
         method: "POST",
 
         headers: {
@@ -154,7 +159,7 @@ function App() {
 
       // Refresh history list
       const historyResponse = await fetch(
-        `${API_URL}/api/chats`
+        buildApiUrl("/api/chats")
       );
 
       if (historyResponse.ok) {
