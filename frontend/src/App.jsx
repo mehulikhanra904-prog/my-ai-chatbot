@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API_URL = "https://my-ai-chatbot-1-0e7q.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL !== undefined 
+  ? import.meta.env.VITE_API_URL 
+  : (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+      ? "" 
+      : "https://my-ai-chatbot-1-0e7q.onrender.com");
 
 function buildApiUrl(path) {
   return API_URL ? `${API_URL}${path}` : path;

@@ -10,8 +10,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 
-const useAIFallback =
-  process.env.USE_AI_FALLBACK !== "false";
+const useAIFallback = process.env.USE_AI_FALLBACK !== "false";
 const aiFallbackReply =
   process.env.AI_FALLBACK_REPLY ||
   "I'm temporarily unable to access the AI service right now. Please try again in a moment.";
@@ -29,29 +28,27 @@ app.use(express.json());
 // Gemini AI
 // ==========================
 
+const apiKey = process.env.GEMINI_API_KEY || "";
 const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-const ai = new GoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+const ai = new GoogleGenerativeAI(apiKey);
 const geminiModel = ai.getGenerativeModel({ model: geminiModelName });
-console.log("Gemini key exists:", !!process.env.GEMINI_API_KEY);
+console.log("Gemini key exists:", !!apiKey);
 console.log("Gemini model:", geminiModelName);
+
 // ==========================
 // MongoDB Schema
 // ==========================
 
-const  messageSchema = new mongoose.Schema(
+const messageSchema = new mongoose.Schema(
   {
     chatId: {
       type: String,
       required: true,
     },
-
     sender: {
       type: String,
       required: true,
     },
-
     text: {
       type: String,
       required: true,
@@ -164,3 +161,128 @@ if (!mongoUri) {
       dbState.connected = false;
     });
 }
+
+// ==========================
+// Home Route
+// ==========================
+
+app.get("/", (req, res) => {
+  res.send("AI Chatbot Backend Running");
+});
+
+// ==========================
+// CHAT + GEMINI + SAVE
+// ==========================
+
+app.post("/api/chat", async (req, res) => {
+  const { message, chatId } = req.body;
+  const currentChatId = chatId || Date.now().toString();
+
+  if (!message) {
+    return res.status(400).json({
+      error: "Message is required",
+    });
+  }
+
+  try {
+    // Save user's message
+    await saveMessage({
+      chatId: currentChatId,
+      sender: "user",
+      text: message,
+    });
+
+    // ==========================
+    // GEMINI AI GENERATION
+    // ==========================
+    let reply = "";
+    if (apiKey) {
+      const response = await geminiModel.generateContent(message);
+      reply = response.response.text();
+      console.log("Gemini response received");
+    } else {
+      reply = "Hello! I am AI Chatbot running in offline/demo mode (add GEMINI_API_KEY to .env for live Gemini responses). How can I help you today?";
+    }
+
+    // Save AI response
+    await saveMessage({
+      chatId: currentChatId,
+      sender: "ai",
+      text: reply,
+    });
+
+    // Send response to React
+    return res.json({
+      reply,
+      chatId: currentChatId,
+    });
+  } catch (error) {
+    console.log("Chat error:", error?.message || error);
+
+    const fallbackReply = aiFallbackReply;
+    const plainError =
+      error?.error?.message ||
+      error?.message ||
+      "Failed to get AI response";
+
+    if (useAIFallback) {
+      await saveMessage({
+        chatId: currentChatId,
+        sender: "ai",
+        text: fallbackReply,
+      });
+
+      return res.status(200).json({
+        reply: fallbackReply,
+        chatId: currentChatId,
+        fallback: true,
+      });
+    }
+
+    return res.status(503).json({
+      error: plainError,
+    });
+  }
+});
+
+// ==========================
+// GET MESSAGES OF ONE CHAT
+// ==========================
+
+app.get("/api/messages/:chatId", async (req, res) => {
+  try {
+    const messages = await findMessagesByChatId(req.params.chatId);
+    res.json(messages);
+  } catch (error) {
+    console.log("Error loading messages:", error.message);
+    res.status(500).json({
+      error: "Failed to load messages",
+    });
+  }
+});
+
+// ==========================
+// GET ALL CHAT HISTORY
+// ==========================
+
+app.get("/api/chats", async (req, res) => {
+  try {
+    const chats = await getChatsSummary();
+    res.json(chats);
+  } catch (error) {
+    console.log("Error loading chat history:", error.message);
+    res.status(500).json({
+      error: "Failed to load chat history",
+    });
+  }
+});
+
+// ==========================
+// START SERVER
+// ==========================
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
