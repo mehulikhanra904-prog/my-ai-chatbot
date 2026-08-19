@@ -28,12 +28,16 @@ app.use(express.json());
 // Gemini AI
 // ==========================
 
-const apiKey = process.env.GEMINI_API_KEY || "";
 const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-const ai = new GoogleGenerativeAI(apiKey);
-const geminiModel = ai.getGenerativeModel({ model: geminiModelName });
-console.log("Gemini key exists:", !!apiKey);
-console.log("Gemini model:", geminiModelName);
+
+function getGeminiModel() {
+  const currentKey = process.env.GEMINI_API_KEY;
+  if (!currentKey) return null;
+  const ai = new GoogleGenerativeAI(currentKey);
+  return ai.getGenerativeModel({ model: geminiModelName });
+}
+
+console.log("Gemini model configured:", geminiModelName);
 
 // ==========================
 // MongoDB Schema
@@ -196,12 +200,14 @@ app.post("/api/chat", async (req, res) => {
     // GEMINI AI GENERATION
     // ==========================
     let reply = "";
-    if (apiKey) {
-      const response = await geminiModel.generateContent(message);
+    const model = getGeminiModel();
+
+    if (model) {
+      const response = await model.generateContent(message);
       reply = response.response.text();
-      console.log("Gemini response received");
+      console.log("Gemini response received successfully");
     } else {
-      reply = "Hello! I am AI Chatbot running in offline/demo mode (add GEMINI_API_KEY to .env for live Gemini responses). How can I help you today?";
+      reply = "Hello! To get live Gemini AI responses, please add your Google Gemini API key to the 'backened/.env' file as:\n\nGEMINI_API_KEY=your_actual_key_here\n\nGet your free key at: https://aistudio.google.com/app/apikey";
     }
 
     // Save AI response
