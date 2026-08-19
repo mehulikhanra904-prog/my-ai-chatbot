@@ -29,7 +29,7 @@ app.use(express.json());
 // Gemini AI
 // ==========================
 
-const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const geminiModelName = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const ai = new GoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
