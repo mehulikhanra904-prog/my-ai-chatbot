@@ -6,6 +6,7 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require("./routes/auth");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
@@ -23,6 +24,7 @@ console.log("AI fallback enabled:", useAIFallback);
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth",authRoutes);
 
 // ==========================
 // Gemini AI
