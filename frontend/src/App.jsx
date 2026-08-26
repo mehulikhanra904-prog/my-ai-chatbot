@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 
 import Login from "./components/Login";
@@ -79,6 +79,7 @@ function App() {
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const recognitionRef = useRef(null);
 
   // ====================================================
   // AUTH HELPERS
@@ -143,6 +144,7 @@ function App() {
 
   function handleLogout() {
     stopSpeaking();
+    stopListening();
 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -242,62 +244,131 @@ function App() {
   // SPEECH INPUT
   // ====================================================
 
-  function startVoiceInput() {
+  function stopListening() {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (err) {
+        console.warn("Error aborting speech recognition:", err);
+      }
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+  }
+
+  async function toggleVoiceInput() {
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert(
-        "Voice input is not supported in this browser. Please use Google Chrome."
+        "Voice input is not supported in this browser. Please use Google Chrome or Microsoft Edge."
       );
       return;
     }
 
-    if (isListening) return;
+    if (isListening) {
+      stopListening();
+      return;
+    }
 
-    const recognition = new SpeechRecognition();
+    // Stop speaking if currently speaking
+    stopSpeaking();
+    setError(null);
 
-    recognition.lang = selectedLanguage;
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
 
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
+      recognition.lang = selectedLanguage || "en-US";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event) => {
-      const spokenText =
-        event.results[0][0].transcript;
+      recognition.onstart = () => {
+        console.log("🎙️ Speech recognition started");
+        setIsListening(true);
+      };
 
-      setInput((previous) =>
-        previous
-          ? `${previous} ${spokenText}`
-          : spokenText
-      );
-    };
+      recognition.onresult = (event) => {
+        console.log("🎤 Speech result received:", event);
 
-    recognition.onerror = (event) => {
-      console.error(
-        "Speech recognition error:",
-        event.error
-      );
+        let transcript = "";
 
-      setIsListening(false);
+        for (
+          let i = event.resultIndex;
+          i < event.results.length;
+          i++
+        ) {
+          transcript += event.results[i][0].transcript;
+        }
 
-      if (event.error === "not-allowed") {
-        alert(
-          "Please allow microphone permission in your browser."
+        transcript = transcript.trim();
+
+        if (transcript) {
+          console.log("📝 Recognized text:", transcript);
+
+          setInput((previous) => {
+            if (previous.trim()) {
+              return `${previous} ${transcript}`;
+            }
+
+            return transcript;
+          });
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error(
+          "❌ Speech recognition error:",
+          event.error
         );
-      }
-    };
 
-    recognition.onend = () => {
+        setIsListening(false);
+        recognitionRef.current = null;
+
+        if (
+          event.error === "not-allowed" ||
+          event.error === "service-not-allowed"
+        ) {
+          setError(
+            "Microphone permission was denied. Please allow microphone access in your browser address bar (lock/tune icon)."
+          );
+        } else if (event.error === "network") {
+          setError(
+            `Speech recognition server could not be reached for ${selectedLanguage}. Please check your internet connection or switch language to English/Hindi.`
+          );
+        } else if (event.error === "no-speech") {
+          console.log("No speech detected.");
+        } else if (event.error === "audio-capture") {
+          setError(
+            "No microphone was detected. Please check your microphone input device."
+          );
+        } else {
+          setError(`Speech recognition error: ${event.error}`);
+        }
+      };
+
+      recognition.onend = () => {
+        console.log("🎙️ Speech recognition ended");
+        setIsListening(false);
+        recognitionRef.current = null;
+      };
+
+      recognition.start();
+    } catch (error) {
+      console.error(
+        "Could not start speech recognition:",
+        error
+      );
+
       setIsListening(false);
-    };
-
-    recognition.start();
+      recognitionRef.current = null;
+    }
   }
+
+  
 
   // ====================================================
   // SPEECH OUTPUT
@@ -355,27 +426,27 @@ function App() {
   // ====================================================
 
   async function sendMessage() {
-    const text = input.trim();
+  const text = input.trim();
 
-    if (!text || loading) return;
+  if (!text || loading) return;
 
-    const userMessage = {
-      id: Date.now(),
-      sender: "user",
-      text,
-    };
+  const userMessage = {
+    id: Date.now(),
+    sender: "user",
+    text: text,
+  };
 
-    setMessages((previous) => [
-      ...previous,
-      userMessage,
-    ]);
+  setMessages((previous) => [
+    ...previous,
+    userMessage,
+  ]);
 
-    setInput("");
-    setLoading(true);
-    setError(null);
+  setInput("");
+  setLoading(true);
+  setError(null);
 
-    try {
-      const response = await fetch(
+  try {
+    const response = await fetch(
         buildApiUrl("/api/chat"),
         {
           method: "POST",
@@ -463,8 +534,9 @@ function App() {
   // OPEN CHAT
   // ====================================================
 
-  function openChat(id) {
+  function openChat(id){
     stopSpeaking();
+    stopListening();
 
     setChatId(id);
 
@@ -479,6 +551,7 @@ function App() {
 
   function newChat() {
     stopSpeaking();
+    stopListening();
 
     setChatId(null);
     setMessages([]);
@@ -494,6 +567,7 @@ function App() {
 
   function clearChat() {
     stopSpeaking();
+    stopListening();
 
     setMessages([]);
     setError(null);
@@ -784,9 +858,9 @@ function App() {
           <button
             className="voice-button"
             onClick={
-              startVoiceInput
+              toggleVoiceInput
             }
-            title="Voice input"
+            title={isListening ? "Stop listening" : "Start voice input"}
           >
             {isListening
               ? "🔴"
@@ -831,4 +905,5 @@ function App() {
 }
 
 export default App;
-       
+
+  
