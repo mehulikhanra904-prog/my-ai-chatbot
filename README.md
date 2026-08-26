@@ -23,156 +23,188 @@
 
 ---
 
-## 🌟 About The Project
+# 🤖 My AI Chatbot
 
-**My AI Chatbot** is a full-stack conversational AI application built with
-React, Node.js, Express, MongoDB Atlas, and the Google Gemini API.
+> **"Build the future, one conversation at a time."** ✨
 
-The chatbot provides an interactive interface where users can communicate
-with an AI assistant while their conversations are stored securely in
-MongoDB and loaded again as chat history.
+My AI Chatbot is a full-stack AI-powered chatbot application built with
+**React, Node.js, Express, MongoDB and Google Gemini API**.
+
+It provides an interactive conversational experience with authentication,
+chat history, multilingual support, voice input, voice output and a modern
+responsive interface.
 
 ---
 
 ## ✨ Features
 
-- 🤖 **AI-powered conversations**
-- 🧠 **Google Gemini integration**
-- 💬 **Real-time chat interface**
-- 🗄️ **MongoDB chat history**
-- 📚 **Load previous conversations**
-- 🌙 **Dark mode**
-- ⌨️ **Enter key support**
-- ⏳ **AI typing animation**
-- 📱 **Responsive interface**
-- 🔐 **Environment variable support
+### 🤖 AI Chat
+- Chat with an AI assistant powered by Google Gemini.
+- Real-time conversation experience.
+- Loading/typing indicator while the AI is responding.
+- Handles backend/API errors gracefully.
 
+### 🔐 Authentication
+- User Sign Up
+- User Login
+- User Logout
+- JWT-based authentication
+- Protected chat history
+- User-specific conversations
 
+### 💬 Chat Management
+- Create a new chat
+- Continue previous conversations
+- View chat history
+- Open previous chats
+- Clear current conversation
+- Automatically save chat ID
+
+### 🎙️ Voice Input
+Use your microphone to speak directly to the chatbot.
+
+- Browser speech recognition
+- Microphone button
+- Automatic speech-to-text
+- Supports multiple languages
+
+> **Tip:** Google Chrome provides the best browser support for speech
+> recognition.
+
+### 🔊 AI Voice Output
+
+The chatbot can read AI responses aloud using the browser's
+Speech Synthesis API.
+
+Features:
+
+- Automatic AI voice response
+- 🔊 Read individual AI messages
+- 🔇 Stop voice
+- Language-dependent speech output
+
+### 🌐 Multilingual Support
+
+The language selector currently contains:
+
+| # | Language |
+|---|---|
+| 1 | 🇬🇧 English |
+| 2 | 🇮🇳 Hindi |
+| 3 | 🇮🇳 Bengali |
+| 4 | 🇮🇳 Gujarati |
+| 5 | 🇮🇳 Kannada |
+| 6 | 🇮🇳 Malayalam |
+| 7 | 🇮🇳 Marathi |
+| 8 | 🇮🇳 Punjabi |
+| 9 | 🇮🇳 Tamil |
+| 10 | 🇮🇳 Telugu |
+| 11 | 🇮🇳 Urdu |
+| 12 | 🇮🇳 Odia |
+| 13 | 🇮🇳 Assamese |
+| 14 | 🇮🇳 Sanskrit |
+
+The selected language is used for browser speech recognition and
+speech synthesis.
+
+### 🌙 Dark Mode
+
+Switch between:
+
+- ☀️ Light Mode
+- 🌙 Dark Mode
+
+### 🎨 Modern UI
+
+The application includes:
+
+- AI-themed interface
+- Responsive chat layout
+- Sidebar chat history
+- Large chat/message boxes
+- Modern buttons
+- Language selector
+- Voice controls
+- Error notifications
+- Welcome screen
 
 ---
 
-## 🖼️ Preview
+# 🛠️ Tech Stack
 
-### 💬 Chat Interface
-<img width="1219" height="728" alt="image" src="https://github.com/user-attachments/assets/bdbd197d-c584-4345-a9a4-5292fde62a89" />
+## Frontend
 
+- React
+- JavaScript
+- HTML5
+- CSS3
+- Vite
+- Web Speech API
 
+## Backend
 
+- Node.js
+- Express.js
+- JavaScript
+- JWT Authentication
+- REST API
 
+## Database
 
----
+- MongoDB
+- Mongoose
 
-## 🛠️ Tech Stack
+## AI
 
-### 🎨 Frontend
+- Google Gemini API
 
-| Technology | Purpose |
-|---|---|
-| ⚛️ React | User interface |
-| ⚡ Vite | Frontend development/build tool |
-| 🎨 CSS | Styling |
-| 🟨 JavaScript | Application logic |
+## Development Tools
 
-### ⚙️ Backend
-
-| Technology | Purpose |
-|---|---|
-| 🟢 Node.js | Runtime |
-| 🚂 Express.js | REST API |
-| 🧠 Google Gemini API | AI responses |
-| 🍃 Mongoose | MongoDB integration |
-
-### 🗄️ Database
-
-**MongoDB Atlas**
-
-Used to store:
-
-- User messages
-- AI responses
-- Chat IDs
-- Message timestamps
-
-### 🔧 Tools
-
-- Visual Studio Code
+- VS Code
 - Git
 - GitHub
 - npm
-- Vercel
 
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
 ```text
 my-ai-chatbot/
 │
-├── 📁 backened/
-│   ├── server.js
-│   ├── package.json
-│   └── package-lock.json
-│
-├── 📁 frontend/
-│   ├── 📁 public/
-│   ├── 📁 src/
-│   │   ├── 📁 assets/
+├── frontend/
+│   │
+│   ├── public/
+│   │
+│   ├── src/
+│   │   │
+│   │   ├── assets/
+│   │   │
+│   │   ├── components/
+│   │   │   ├── Login.jsx
+│   │   │   └── Signup.jsx
+│   │   │
 │   │   ├── App.jsx
 │   │   ├── App.css
 │   │   ├── index.css
 │   │   └── main.jsx
 │   │
 │   ├── package.json
-│   ├── package-lock.json
-│   └── vite.config.js
+│   ├── vite.config.js
+│   └── README.md
 │
-├── .gitignore
-└── README.md
-# 🤖 My AI Chatbot
-
-An AI chatbot built using the MERN stack and Google Gemini API.
-
-## 🚀 Features
-
-- 💬 AI-powered chat
-- 🤖 Google Gemini API integration
-- 💾 Chat history storage
-- 🗄️ MongoDB database
-- ⚡ React frontend
-- 🚀 Node.js and Express backend
-- 🌐 Deployed online
-
-## 🛠️ Tech Stack
-
-### Frontend
-- React
-- JavaScript
-- HTML
-- CSS
-
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- Google Gemini API
-
-## 🚀 Live Demo
-
-[Open AI Chatbot](https://my-ai-chatbot-sigma-brown.vercel.app/)
-
-## 📂 Project Structure
-
-```text
-my-ai-chatbot/
-├── frontend/
-│   ├── src/
-│   ├── package.json
-│   └── ...
-│
-├── backened/
+├── backend/
+│   │
+│   ├── models/
+│   │
+│   ├── routes/
+│   │
+│   ├── middleware/
+│   │
 │   ├── server.js
 │   ├── package.json
-│   └── package-lock.json
+│   └── .env
+│
+└── README.md
 │
 └── README.md
