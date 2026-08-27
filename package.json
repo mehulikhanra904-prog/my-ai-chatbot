@@ -13,10 +13,5 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.0"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "js": "^0.1.0",
-    "jsonwebtoken": "^9.0.3"
   }
 }
