@@ -8,8 +8,10 @@
   "scripts": {
     "dev": "concurrently \"npm --prefix backened run dev\" \"npm --prefix frontend run dev\"",
     "start": "npm run dev",
-    "build": "npm --prefix frontend run build",
-    "backend": "npm --prefix backened run dev",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+  
+
+    "backened": "npm --prefix backened run dev",
     "frontend": "npm --prefix frontend run dev"
   },
   "devDependencies": {
