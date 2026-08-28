@@ -12,10 +12,10 @@
   }
 }
     "backend": "npm --prefix backened run dev",
-    "frontend": "npm --prefix frontend run dev"
-  },
+    "frontend": "npm --prefix frontend run dev",
+  
   "devDependencies": {
     "concurrently": "^8.2.0"
   }
-}
+
 
