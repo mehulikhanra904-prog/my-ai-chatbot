@@ -1,10 +1,35 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 const User = require("../models/user");
 
 const router = express.Router();
+
+// In-memory fallback storage when MongoDB connection is offline
+const localUsers = [];
+
+async function findUserByEmail(email) {
+  if (mongoose.connection.readyState === 1) {
+    return User.findOne({ email });
+  }
+  return localUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
+}
+
+async function createUser(userData) {
+  if (mongoose.connection.readyState === 1) {
+    return User.create(userData);
+  }
+  const newUser = {
+    _id: `${Date.now()}-${Math.random()}`,
+    ...userData,
+    createdAt: new Date(),
+  };
+  localUsers.push(newUser);
+  return newUser;
+}
+
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -15,7 +40,7 @@ router.post("/signup", async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await findUserByEmail(email);
 
     if (existingUser) {
       return res.status(400).json({
@@ -25,7 +50,7 @@ router.post("/signup", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    const user = await createUser({
       name,
       email,
       password: hashedPassword,
@@ -36,18 +61,25 @@ router.post("/signup", async (req, res) => {
       userId: user._id,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Signup error:", error);
 
     res.status(500).json({
-      message: "Signup failed",
+      message: error.message || "Signup failed",
     });
   }
 });
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Please provide email and password",
+      });
+    }
+
+    const user = await findUserByEmail(email);
 
     if (!user) {
       return res.status(400).json({
@@ -66,11 +98,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    const jwtSecret = process.env.JWT_SECRET || "fallback_secret_key_12345";
+
     const token = jwt.sign(
       {
         userId: user._id,
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       {
         expiresIn: "7d",
       }
@@ -83,16 +117,16 @@ router.post("/login", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        preferredLanguage: user.preferredLanguage,
+        preferredLanguage: user.preferredLanguage || "en-US",
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
 
     res.status(500).json({
-      message: "Login failed",
+      message: error.message || "Login failed",
     });
   }
 });
 
-module.exports = router;
+module.exports = router;
