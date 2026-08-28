@@ -1,11 +1,12 @@
 require("dotenv").config();
 
 const dns = require("dns");
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require("./routes/auth");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
@@ -23,12 +24,13 @@ console.log("AI fallback enabled:", useAIFallback);
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth",authRoutes);
 
 // ==========================
 // Gemini AI
 // ==========================
 
-const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const geminiModelName = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 function getGeminiModel() {
   const currentKey = process.env.GEMINI_API_KEY;
@@ -38,7 +40,6 @@ function getGeminiModel() {
 }
 
 console.log("Gemini model configured:", geminiModelName);
-
 // ==========================
 // MongoDB Schema
 // ==========================
@@ -225,11 +226,24 @@ app.post("/api/chat", async (req, res) => {
   } catch (error) {
     console.log("Chat error:", error?.message || error);
 
-    const fallbackReply = aiFallbackReply;
     const plainError =
       error?.error?.message ||
       error?.message ||
       "Failed to get AI response";
+
+    const isQuotaError =
+      error?.status === 429 ||
+      error?.message?.includes("429") ||
+      error?.message?.toLowerCase().includes("quota");
+
+    if (isQuotaError) {
+      return res.status(429).json({
+        error:
+          "Gemini API quota exceeded. Wait for the quota to reset or replace GEMINI_API_KEY with a key that has available quota.",
+      });
+    }
+
+    const fallbackReply = aiFallbackReply;
 
     if (useAIFallback) {
       await saveMessage({
