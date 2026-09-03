@@ -120,7 +120,7 @@ router.post("/login", async (req, res) => {
         preferredLanguage: user.preferredLanguage || "en-US",
       },
     });
-  } catch (error) {
+  } catch (error){
     console.error("Login error:", error);
 
     res.status(500).json({
@@ -129,4 +129,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;

@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://my-ai-chatbot-2-o2pz.onrender.com',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
       },

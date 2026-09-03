@@ -1,0 +1,9 @@
+
+  {
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://my-ai-chatbot-2-o2pz.onrender.com/api/:path*"
+    }
+  ]
+}
