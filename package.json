@@ -9,13 +9,13 @@
     "dev": "concurrently  \"npm --prefix frontend run dev\"",
     "start": "npm run dev",
     "build": "npm install --prefix frontend && npm run build --prefix frontend",
+  }
+}
+    "backend": "npm --prefix backened run dev",
+    "frontend": "npm --prefix frontend run dev",
   
-
-    "backened": "npm --prefix backened run dev",
-    "frontend": "npm --prefix frontend run dev"
-  },
   "devDependencies": {
     "concurrently": "^8.2.0"
   }
-}
+
 
