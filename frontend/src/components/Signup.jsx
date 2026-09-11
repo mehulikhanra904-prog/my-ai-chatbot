@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getApiUrl } from "../config";
 
 function Signup({ switchToLogin }) {
 
@@ -12,7 +13,7 @@ function Signup({ switchToLogin }) {
     try {
 
       const response = await fetch(
-        "/api/auth/signup",
+        getApiUrl("/api/auth/signup"),
         {
           method: "POST",
 
