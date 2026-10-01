@@ -30,7 +30,7 @@ app.use("/api/auth",authRoutes);
 // Gemini AI
 // ==========================
 
-const geminiModelName = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 function getGeminiModel() {
   const currentKey = process.env.GEMINI_API_KEY;
@@ -237,9 +237,24 @@ app.post("/api/chat", async (req, res) => {
       error?.message?.toLowerCase().includes("quota");
 
     if (isQuotaError) {
+      if (useAIFallback) {
+        await saveMessage({
+          chatId: currentChatId,
+          sender: "ai",
+          text: aiFallbackReply,
+        });
+
+        return res.status(200).json({
+          reply: aiFallbackReply,
+          chatId: currentChatId,
+          fallback: true,
+          reason: "gemini_quota_exceeded",
+        });
+      }
+
       return res.status(429).json({
         error:
-          "Gemini API quota exceeded. Wait for the quota to reset or replace GEMINI_API_KEY with a key that has available quota.",
+          "Gemini API quota exceeded. Replace GEMINI_API_KEY with a key that has available quota.",
       });
     }
 
