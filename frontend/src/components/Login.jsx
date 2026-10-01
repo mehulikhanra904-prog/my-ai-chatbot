@@ -17,7 +17,7 @@ function Login({ onLogin, switchToSignup }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email,
+            email: email.trim(),
             password,
           }),
         }
@@ -55,6 +55,8 @@ function Login({ onLogin, switchToSignup }) {
               <input
                   type="email"
                   placeholder="Email"
+                  name="email"
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required />
@@ -62,6 +64,8 @@ function Login({ onLogin, switchToSignup }) {
               <input
                   type="password"
                   placeholder="Password"
+                  name="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required />
