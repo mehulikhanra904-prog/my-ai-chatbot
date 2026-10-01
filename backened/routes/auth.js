@@ -11,10 +11,19 @@ const router = express.Router();
 const localUsers = [];
 
 async function findUserByEmail(email) {
+  const normalizedEmail =
+    typeof email === "string" ? email.trim().toLowerCase() : "";
+
   if (mongoose.connection.readyState === 1) {
-    return User.findOne({ email });
+    // Case-insensitive lookup so existing accounts keep working.
+    return User.findOne({
+      $expr: { $eq: [{ $toLower: "$email" }, normalizedEmail] },
+    });
   }
-  return localUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
+
+  return localUsers.find(
+    (u) => u.email.toLowerCase() === normalizedEmail
+  );
 }
 
 async function createUser(userData) {
@@ -33,14 +42,18 @@ async function createUser(userData) {
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedName =
+      typeof name === "string" ? name.trim() : "";
 
-    if (!name || !email || !password) {
+    if (!normalizedName || !normalizedEmail || !password) {
       return res.status(400).json({
         message: "Please fill all fields",
       });
     }
 
-    const existingUser = await findUserByEmail(email);
+    const existingUser = await findUserByEmail(normalizedEmail);
 
     if (existingUser) {
       return res.status(400).json({
@@ -51,8 +64,8 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await createUser({
-      name,
-      email,
+      name: normalizedName,
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
