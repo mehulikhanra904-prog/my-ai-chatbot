@@ -72,14 +72,15 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return res.status(400).json({
         message: "Please provide email and password",
       });
     }
 
-    const user = await findUserByEmail(email);
+    const user = await findUserByEmail(normalizedEmail);
 
     if (!user) {
       return res.status(400).json({
