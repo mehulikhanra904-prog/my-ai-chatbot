@@ -7,6 +7,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
+const { optionalAuth } = require("./middleware/auth");
+const Message = require("./models/message");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
@@ -24,60 +26,35 @@ console.log("AI fallback enabled:", useAIFallback);
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/auth",authRoutes);
+app.use("/api/auth", authRoutes);
 
 // ==========================
 // Gemini AI
 // ==========================
 
-const geminiModelName = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const geminiModelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
 function getGeminiModel() {
   const currentKey = process.env.GEMINI_API_KEY;
-  if (!currentKey) return null;
+  if (!currentKey || currentKey.startsWith("AQ.") || currentKey.includes("your_actual_key_here")) {
+    return null;
+  }
   const ai = new GoogleGenerativeAI(currentKey);
   return ai.getGenerativeModel({ model: geminiModelName });
 }
 
 console.log("Gemini model configured:", geminiModelName);
-// ==========================
-// MongoDB Schema
-// ==========================
-
-const messageSchema = new mongoose.Schema(
-  {
-    chatId: {
-      type: String,
-      required: true,
-    },
-    sender: {
-      type: String,
-      required: true,
-    },
-    text: {
-      type: String,
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const Message = mongoose.model("Message", messageSchema);
 
 // ==========================
-// MongoDB Connection
+// Database Helpers
 // ==========================
-
-const dbState = {
-  connected: false,
-};
 
 const localMessages = [];
 
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
 const saveMessage = async (messageData) => {
-  if (dbState.connected) {
+  if (isDbConnected()) {
     return Message.create(messageData);
   }
 
@@ -92,19 +69,30 @@ const saveMessage = async (messageData) => {
   return localMessage;
 };
 
-const findMessagesByChatId = async (chatId) => {
-  if (dbState.connected) {
-    return Message.find({ chatId }).sort({ createdAt: 1 });
+const findMessagesByChatId = async (chatId, userId) => {
+  if (isDbConnected()) {
+    const query = { chatId };
+    if (userId) query.userId = String(userId);
+    return Message.find(query).sort({ createdAt: 1 });
   }
 
   return localMessages
-    .filter((message) => message.chatId === chatId)
+    .filter(
+      (message) =>
+        message.chatId === chatId &&
+        (!userId || message.userId === String(userId))
+    )
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 };
 
-const getChatsSummary = async () => {
-  if (dbState.connected) {
+const getChatsSummary = async (userId) => {
+  if (isDbConnected()) {
+    const matchStage = userId
+      ? { $match: { userId: String(userId) } }
+      : { $match: {} };
+
     return Message.aggregate([
+      matchStage,
       {
         $sort: {
           createdAt: 1,
@@ -129,8 +117,12 @@ const getChatsSummary = async () => {
     ]);
   }
 
+  const filteredMessages = userId
+    ? localMessages.filter((m) => m.userId === String(userId))
+    : localMessages;
+
   const chats = Object.values(
-    localMessages.reduce((acc, message) => {
+    filteredMessages.reduce((acc, message) => {
       if (!acc[message.chatId]) {
         acc[message.chatId] = {
           _id: message.chatId,
@@ -147,6 +139,10 @@ const getChatsSummary = async () => {
   );
 };
 
+// ==========================
+// MongoDB Connection
+// ==========================
+
 const mongoUri = process.env.MONGODB_URI;
 
 if (!mongoUri) {
@@ -159,11 +155,9 @@ if (!mongoUri) {
     })
     .then(() => {
       console.log("MongoDB connected successfully");
-      dbState.connected = true;
     })
     .catch((err) => {
       console.error("MongoDB connection failed. Continuing with in-memory storage.", err.message);
-      dbState.connected = false;
     });
 }
 
@@ -179,7 +173,7 @@ app.get("/", (req, res) => {
 // CHAT + GEMINI + SAVE
 // ==========================
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", optionalAuth, async (req, res) => {
   const { message, chatId } = req.body;
   const currentChatId = chatId || Date.now().toString();
 
@@ -195,6 +189,7 @@ app.post("/api/chat", async (req, res) => {
       chatId: currentChatId,
       sender: "user",
       text: message,
+      userId: req.userId || null,
     });
 
     // ==========================
@@ -216,6 +211,7 @@ app.post("/api/chat", async (req, res) => {
       chatId: currentChatId,
       sender: "ai",
       text: reply,
+      userId: req.userId || null,
     });
 
     // Send response to React
@@ -242,6 +238,7 @@ app.post("/api/chat", async (req, res) => {
           chatId: currentChatId,
           sender: "ai",
           text: aiFallbackReply,
+          userId: req.userId || null,
         });
 
         return res.status(200).json({
@@ -265,6 +262,7 @@ app.post("/api/chat", async (req, res) => {
         chatId: currentChatId,
         sender: "ai",
         text: fallbackReply,
+        userId: req.userId || null,
       });
 
       return res.status(200).json({
@@ -284,9 +282,9 @@ app.post("/api/chat", async (req, res) => {
 // GET MESSAGES OF ONE CHAT
 // ==========================
 
-app.get("/api/messages/:chatId", async (req, res) => {
+app.get("/api/messages/:chatId", optionalAuth, async (req, res) => {
   try {
-    const messages = await findMessagesByChatId(req.params.chatId);
+    const messages = await findMessagesByChatId(req.params.chatId, req.userId);
     res.json(messages);
   } catch (error) {
     console.log("Error loading messages:", error.message);
@@ -300,9 +298,9 @@ app.get("/api/messages/:chatId", async (req, res) => {
 // GET ALL CHAT HISTORY
 // ==========================
 
-app.get("/api/chats", async (req, res) => {
+app.get("/api/chats", optionalAuth, async (req, res) => {
   try {
-    const chats = await getChatsSummary();
+    const chats = await getChatsSummary(req.userId);
     res.json(chats);
   } catch (error) {
     console.log("Error loading chat history:", error.message);

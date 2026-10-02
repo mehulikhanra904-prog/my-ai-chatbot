@@ -112,7 +112,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const jwtSecret = process.env.JWT_SECRET || "fallback_secret_key_12345";
+    const jwtSecret = (process.env.JWT_SECRET || "fallback_secret_key_12345").trim();
 
     const token = jwt.sign(
       {
