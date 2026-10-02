@@ -30,7 +30,7 @@ app.use("/api/auth",authRoutes);
 // Gemini AI
 // ==========================
 
-const geminiModelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const geminiModelName = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 function getGeminiModel() {
   const currentKey = process.env.GEMINI_API_KEY;
