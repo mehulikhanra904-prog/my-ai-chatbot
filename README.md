@@ -15,8 +15,8 @@ A feature-packed, full-stack AI Chatbot application built with **React**, **Node
 
 ## 🔗 Live Deployments & Source Code
 
-- 🌐 **Live Frontend Application (Vercel):[https://my-ai-chatbot-69rv.vercel.app/]
-- 💻 **GitHub Repository:** [arpanbasak90-cyber / friend-ai-chatbot](https://github.com/arpanbasak90-cyber/friend-ai-chatbot)
+- 🌐 **Live Frontend Application (Vercel):** https://my-ai-chatbot-69rv.vercel.app/
+- 💻 **GitHub Repository:** https://github.com/mehulikhanra904-prog/my-ai-chatbot
 
 ---
 
