@@ -7,7 +7,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 
@@ -32,11 +32,10 @@ app.use("/api/auth",authRoutes);
 
 const geminiModelName = "gemini-3.6-flash";
 
-function getGeminiModel() {
+function getGeminiClient() {
   const currentKey = process.env.GEMINI_API_KEY;
   if (!currentKey) return null;
-  const ai = new GoogleGenerativeAI(currentKey);
-  return ai.getGenerativeModel({ model: geminiModelName });
+  return new GoogleGenAI({ apiKey: currentKey });
 }
 
 console.log("Gemini model configured:", geminiModelName);
@@ -201,11 +200,14 @@ app.post("/api/chat", async (req, res) => {
     // GEMINI AI GENERATION
     // ==========================
     let reply = "";
-    const model = getGeminiModel();
+    const ai = getGeminiClient();
 
-    if (model) {
-      const response = await model.generateContent(message);
-      reply = response.response.text();
+    if (ai) {
+      const response = await ai.models.generateContent({
+        model: geminiModelName,
+        contents: message,
+      });
+      reply = response.text;
       console.log("Gemini response received successfully");
     } else {
       reply = "Hello! To get live Gemini AI responses, please add your Google Gemini API key to the 'backened/.env' file as:\n\nGEMINI_API_KEY=your_actual_key_here\n\nGet your free key at: https://aistudio.google.com/app/apikey";
