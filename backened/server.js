@@ -9,7 +9,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const { optionalAuth } = require("./middleware/auth");
 const Message = require("./models/message");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 
@@ -36,11 +36,16 @@ const geminiModelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
 function getGeminiClient() {
   const currentKey = process.env.GEMINI_API_KEY;
-  if (!currentKey || currentKey.startsWith("AQ.") || currentKey.includes("your_actual_key_here")) {
+
+  if (
+    !currentKey ||
+    currentKey.startsWith("AQ.") ||
+    currentKey.includes("your_actual_key_here")
+  ) {
     return null;
   }
-  const ai = new GoogleGenerativeAI(currentKey);
-  return ai.getGenerativeModel({ model: geminiModelName });
+
+  return new GoogleGenAI({ apiKey: currentKey });
 }
 
 console.log("Gemini model configured:", geminiModelName);
@@ -146,7 +151,9 @@ const getChatsSummary = async (userId) => {
 const mongoUri = process.env.MONGODB_URI;
 
 if (!mongoUri) {
-  console.warn("MONGODB_URI is not defined. Continuing with in-memory storage only.");
+  console.warn(
+    "MONGODB_URI is not defined. Continuing with in-memory storage only."
+  );
 } else {
   mongoose
     .connect(mongoUri, {
@@ -157,7 +164,10 @@ if (!mongoUri) {
       console.log("MongoDB connected successfully");
     })
     .catch((err) => {
-      console.error("MongoDB connection failed. Continuing with in-memory storage.", err.message);
+      console.error(
+        "MongoDB connection failed. Continuing with in-memory storage.",
+        err.message
+      );
     });
 }
 
@@ -184,7 +194,6 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
   }
 
   try {
-    // Save user's message
     await saveMessage({
       chatId: currentChatId,
       sender: "user",
@@ -192,9 +201,6 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
       userId: req.userId || null,
     });
 
-    // ==========================
-    // GEMINI AI GENERATION
-    // ==========================
     let reply = "";
     const ai = getGeminiClient();
 
@@ -203,13 +209,14 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
         model: geminiModelName,
         contents: message,
       });
+
       reply = response.text;
       console.log("Gemini response received successfully");
     } else {
-      reply = "Hello! To get live Gemini AI responses, please add your Google Gemini API key to the 'backened/.env' file as:\n\nGEMINI_API_KEY=your_actual_key_here\n\nGet your free key at: https://aistudio.google.com/app/apikey";
+      reply =
+        "Hello! To get live Gemini AI responses, please add your Google Gemini API key to the 'backened/.env' file as:\n\nGEMINI_API_KEY=your_actual_key_here\n\nGet your free key at: https://aistudio.google.com/app/apikey";
     }
 
-    // Save AI response
     await saveMessage({
       chatId: currentChatId,
       sender: "ai",
@@ -217,7 +224,6 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
       userId: req.userId || null,
     });
 
-    // Send response to React
     return res.json({
       reply,
       chatId: currentChatId,
@@ -258,18 +264,16 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
       });
     }
 
-    const fallbackReply = aiFallbackReply;
-
     if (useAIFallback) {
       await saveMessage({
         chatId: currentChatId,
         sender: "ai",
-        text: fallbackReply,
+        text: aiFallbackReply,
         userId: req.userId || null,
       });
 
       return res.status(200).json({
-        reply: fallbackReply,
+        reply: aiFallbackReply,
         chatId: currentChatId,
         fallback: true,
       });
